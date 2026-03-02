@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Create Meeting</title>
+    <style>
+        body {
+            font-family: Arial;
+            background: #f5f7fa;
+            padding: 40px;
+        }
+
+        .card {
+            background: white;
+            padding: 30px;
+            width: 500px;
+            margin: auto;
+            border-radius: 12px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        h2 {
+            text-align: center;
+        }
+
+        button {
+            padding: 10px 15px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+
+        .generate {
+            background: #4285F4;
+            color: white;
+        }
+
+        .attach {
+            background: #34A853;
+            color: white;
+            display: none;
+        }
+
+        input {
+            width: 100%;
+            padding: 8px;
+            margin-top: 10px;
+        }
+
+        .info {
+            margin-top: 15px;
+            color: gray;
+        }
+    </style>
+</head>
+<body>
+
+<div class="card">
+    <h2>Create Google Meet</h2>
+
+    <!-- Step 1 -->
+    <button class="generate" onclick="openMeet()">
+        Generate Meeting
+    </button>
+
+    <p class="info">
+        After Meet opens, join once and click "Copy link".
+    </p>
+
+    <!-- Step 2 -->
+    <form method="POST">
+        {% csrf_token %}
+        <input type="text" name="meet_link" id="meet_link" placeholder="Meeting link will appear here" required>
+
+        <button type="button" class="attach" onclick="attachLink()">
+            Attach Meeting Link
+        </button>
+
+        <button type="submit" style="background:#222; color:white;">
+            Save Meeting
+        </button>
+    </form>
+</div>
+
+<script>
+    function openMeet() {
+        window.open("https://meet.new", "_blank");
+        document.querySelector(".attach").style.display = "inline-block";
+    }
+
+    async function attachLink() {
+        try {
+            const text = await navigator.clipboard.readText();
+
+            if (text.includes("meet.google.com")) {
+                document.getElementById("meet_link").value = text;
+                alert("Meeting link attached!");
+            } else {
+                alert("Copied content is not a Google Meet link.");
+            }
+        } catch (err) {
+            alert("Clipboard access denied. Please paste manually.");
+        }
+    }
+</script>
+
+</body>
+</html>

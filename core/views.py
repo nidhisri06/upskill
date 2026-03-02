@@ -1,15 +1,16 @@
-from django.shortcuts import render, redirect
+from django.db.models import Q
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.models import User
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
-from django.db.models import Q
-from .models import Profile, Message, PhoneOTP
+from .models import Profile, Message, PhoneOTP, Connection, Course, Note
 import random
 
 
 def home(request):
     return render(request, "index.html")
+
 
 def signup_view(request):
     if request.method == "POST":
@@ -22,7 +23,6 @@ def signup_view(request):
             messages.error(request, "Username already exists")
             return redirect("signup")
 
-        # Delete old OTP if exists
         PhoneOTP.objects.filter(phone_number=phone).delete()
 
         otp = str(random.randint(100000, 999999))
@@ -35,7 +35,7 @@ def signup_view(request):
             "phone": phone
         }
 
-        print("OTP is:", otp)  # Demo purpose
+        print("OTP is:", otp)
 
         return redirect("verify_otp")
 
@@ -60,7 +60,6 @@ def verify_otp(request):
 
         if otp_obj.otp == entered_otp:
 
-            # Prevent duplicate user creation
             if User.objects.filter(username=signup_data["username"]).exists():
                 user = User.objects.get(username=signup_data["username"])
             else:
@@ -70,10 +69,9 @@ def verify_otp(request):
                     password=signup_data["password"]
                 )
 
-            # Update profile (auto created by signal)
             profile = user.profile
-            profile.phone_number = phone
-            profile.is_phone_verified = True
+            profile.phone = phone
+            profile.phone_verified = True
             profile.save()
 
             otp_obj.delete()
@@ -111,29 +109,28 @@ def logout_view(request):
 
 @login_required
 def dashboard(request):
-    profile = request.user.profile
+    users = User.objects.exclude(id=request.user.id)
 
-    received_requests = Connection.objects.filter(
-        receiver=request.user,
-        status='pending'
-    )
+    pending_requests = Connection.objects.filter(
+    receiver=request.user,
+    accepted=False
+)
+    
 
-    sent_requests = Connection.objects.filter(
-        sender=request.user,
-        status='pending'
-    )
+    # All courses
+    courses = Course.objects.all()
 
-    connections = Connection.objects.filter(
-        Q(sender=request.user, status='accepted') |
-        Q(receiver=request.user, status='accepted')
-    )
+    # All notes (for all courses)
+    notes = Note.objects.all().order_by("-id")
 
-    return render(request, 'dashboard.html', {
-        'profile': profile,
-        'received_requests': received_requests,
-        'sent_requests': sent_requests,
-        'connections': connections
-    })
+    context = {
+        "users": users,
+        "pending_requests": pending_requests,
+        "courses": courses,
+        "notes": notes,
+    }
+
+    return render(request, "dashboard.html", context)
 
 
 @login_required
@@ -142,11 +139,10 @@ def edit_profile(request):
 
     if request.method == "POST":
         profile.bio = request.POST.get('bio')
-        profile.skills_offered = request.POST.get('skills_offered')
-        profile.skills_wanted = request.POST.get('skills_wanted')
+        profile.skills = request.POST.get('skills')
 
-        if request.FILES.get('profile_picture'):
-            profile.profile_picture = request.FILES.get('profile_picture')
+        if request.FILES.get('profile_pic'):
+            profile.profile_pic = request.FILES.get('profile_pic')
 
         profile.save()
         return redirect('profile', user_id=request.user.id)
@@ -162,8 +158,7 @@ def explore(request):
 
     if search_query:
         profiles = profiles.filter(
-            Q(skills__icontains=search_query) |
-            Q(skills_icontains=search_query)
+            Q(skills__icontains=search_query)
         )
 
     return render(request, 'explore.html', {
@@ -174,36 +169,40 @@ def explore(request):
 
 @login_required
 def send_request(request, user_id):
-    receiver = User.objects.get(id=user_id)
+    receiver = get_object_or_404(User, id=user_id)
 
-    if not Connection.objects.filter(sender=request.user, receiver=receiver).exists():
-        Connection.objects.create(sender=request.user, receiver=receiver)
+    if receiver != request.user:
+        Connection.objects.get_or_create(
+            sender=request.user,
+            receiver=receiver,
+            defaults={'accepted': False}
+        )
 
-    return redirect('explore')
+    return redirect('dashboard')
 
 
 @login_required
 def accept_request(request, request_id):
-    connection = Connection.objects.get(id=request_id)
-    connection.status = 'accepted'
+    connection = get_object_or_404(Connection, id=request_id)
+    connection.accepted = True
     connection.save()
     return redirect('dashboard')
 
 
 @login_required
 def reject_request(request, request_id):
-    connection = Connection.objects.get(id=request_id)
+    connection = get_object_or_404(Connection, id=request_id)
     connection.delete()
     return redirect('dashboard')
 
 
 @login_required
 def chat(request, user_id):
-    other_user = User.objects.get(id=user_id)
+    other_user = get_object_or_404(User, id=user_id)
 
     is_connected = Connection.objects.filter(
-        Q(sender=request.user, receiver=other_user, status='accepted') |
-        Q(sender=other_user, receiver=request.user, status='accepted')
+        Q(sender=request.user, receiver=other_user, accepted=True) |
+        Q(sender=other_user, receiver=request.user, accepted=True)
     )
 
     if not is_connected.exists():
@@ -232,7 +231,7 @@ def chat(request, user_id):
 
 @login_required
 def profile_view(request, user_id):
-    user = User.objects.get(id=user_id)
+    user = get_object_or_404(User, id=user_id)
     profile = user.profile
 
     return render(request, 'profile.html', {
@@ -240,23 +239,36 @@ def profile_view(request, user_id):
         'profile': profile
     })
 
-def dashboard(request):
-    profile = request.user.profile
-    completion = 0
+@login_required
+def course_notes(request, course_id):
+    course = get_object_or_404(Course, id=course_id)
+    notes = Note.objects.filter(course=course)
 
-    if profile.bio:
-        completion += 20
-    if profile.profile_pic:
-        completion += 20
-    if profile.skills:
-        completion += 20
-    if profile.phone:
-        completion += 20
-    if profile.phone_verified:
-        completion += 20
+    if request.method == "POST":
+        title = request.POST.get("title")
+        pdf = request.FILES.get("pdf")
 
-    context = {
-        'profile': profile,
-        'completion': completion
-    }
-    return render(request, 'dashboard.html', context)
+        if pdf and pdf.name.lower().endswith(".pdf"):
+            Note.objects.create(
+    course=course,
+    title=title,
+    pdf=pdf,
+    uploaded_by=request.user
+)
+                
+            return redirect("course_notes", course_id=course.id)
+
+    return render(request, "course_notes.html", {
+        "course": course,
+        "notes": notes
+    })
+
+
+@login_required
+def delete_note(request, note_id):
+    note = get_object_or_404(Note, id=note_id)
+
+    if note.user == request.user:
+        note.delete()
+
+    return redirect("course_notes", course_id=note.course.id)

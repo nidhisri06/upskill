@@ -21,6 +21,7 @@ from django.conf import settings
 from django.conf.urls.static import static
 
 urlpatterns = [
+   
     path('admin/', admin.site.urls),
     path('', views.home, name='home'),
     path('login/', views.login_view, name='login'),
@@ -35,8 +36,11 @@ urlpatterns = [
     path('profile/<int:user_id>/', views.profile_view, name='profile'),
     path('signup/', views.signup_view, name='signup'),
     path('verify-otp/', views.verify_otp, name='verify_otp'),
+    path('course/<int:course_id>/', views.course_notes, name='course_notes'),
+    path('delete-note/<int:note_id>/', views.delete_note, name='delete_note'),
+
 
 ]
 
-if settings.DEBUG:
-    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+
+urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

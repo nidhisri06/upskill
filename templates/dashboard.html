@@ -207,94 +207,102 @@ body{
 </div>
 
 
-<!-- PENDING REQUESTS -->
+<!-- Pending Requests Section -->
 
 <div class="card">
+    <h3>Pending Requests</h3>
 
-<h3>Pending Requests</h3>
+    {% for request in pending_requests %}
+        <div class="user-row">
 
-{% for request in pending_requests %}
+            <strong>
+                <a href="{% url 'profile' request.sender.id %}">
+                    {{ request.sender.username }}
+                </a>
+            </strong>
 
-<div class="user-row">
+            <div>
 
-<strong>
-<a href="{% url 'profile' request.sender.id %}">
-{{ request.sender.username }}
-</a>
-</strong>
+                <!-- ACCEPT BUTTON -->
+                <form method="POST" action="{% url 'accept_request' request.id %}" style="display:inline;">
+                    {% csrf_token %}
+                    <button class="accept-btn">Accept</button>
+                </form>
 
-<div>
+                <!-- REJECT BUTTON -->
+                <form method="POST" action="{% url 'reject_request' request.id %}" style="display:inline;">
+                    {% csrf_token %}
+                    <button class="reject-btn">Reject</button>
+                </form>
 
-<form method="POST" action="{% url 'respond_request' request.id 'accept' %}" style="display:inline;">
-{% csrf_token %}
-<button class="accept-btn">Accept</button>
-</form>
+            </div>
 
-<form method="POST" action="{% url 'respond_request' request.id 'reject' %}" style="display:inline;">
-{% csrf_token %}
-<button class="reject-btn">Reject</button>
-</form>
+        </div>
 
+    {% empty %}
+        <p>No pending requests.</p>
+    {% endfor %}
 </div>
 
+<div style="display:flex; gap:40px; align-items:flex-start;">
+
+    <!-- LEFT SIDE -->
+    <div style="flex:1;">
+        
+        <!-- Discover Users -->
+        <!-- Keep your existing Discover Users code here -->
+
+        <!-- Pending Requests -->
+        <!-- Keep your existing Pending Requests code here -->
+
+    </div>
+
+
+    <!-- RIGHT SIDE -->
+    <div style="flex:1.5;">
+
+        <h2 style="margin-bottom:20px;">📚 All Notes</h2>
+
+        {% if notes %}
+            <div style="display:flex; flex-wrap:wrap; gap:20px;">
+                {% for note in notes %}
+                    <div style="
+                        background:white;
+                        width:260px;
+                        padding:20px;
+                        border-radius:12px;
+                        box-shadow:0 4px 12px rgba(0,0,0,0.1);
+                    ">
+                        <h3>{{ note.title }}</h3>
+
+                        <p style="font-size:14px; color:gray;">
+                            📘 {{ note.course.name }}
+                        </p>
+
+                        <p style="font-size:14px; color:gray;">
+                            👤 {{ note.uploaded_by.username }}
+                        </p>
+
+                        <a href="{{ note.pdf.url }}" target="_blank"
+                           style="
+                           display:block;
+                           margin-top:10px;
+                           padding:8px;
+                           background:#4CAF50;
+                           color:white;
+                           text-align:center;
+                           text-decoration:none;
+                           border-radius:6px;">
+                           View PDF
+                        </a>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <p>No notes uploaded yet.</p>
+        {% endif %}
+
+    </div>
+    
+
 </div>
-
-{% empty %}
-
-<p>No pending requests.</p>
-
-{% endfor %}
-
-</div>
-
-
-<!-- CONNECTIONS -->
-
-<div class="card">
-
-<h3>Your Connections</h3>
-
-{% for connection in connections %}
-
-<div class="user-row">
-
-{% if connection.sender == request.user %}
-
-<span>
-<a href="{% url 'profile' connection.receiver.id %}">
-{{ connection.receiver.username }}
-</a>
-</span>
-
-<a href="{% url 'chat' connection.receiver.id %}" class="connect-btn">
-Message
-</a>
-
-{% else %}
-
-<span>
-<a href="{% url 'profile' connection.sender.id %}">
-{{ connection.sender.username }}
-</a>
-</span>
-
-<a href="{% url 'chat' connection.sender.id %}" class="connect-btn">
-Message
-</a>
-
-{% endif %}
-
-</div>
-
-{% empty %}
-
-<p>No connections yet.</p>
-
-{% endfor %}
-
-</div>
-
-</div>
-
-</body>
-</html>
