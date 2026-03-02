@@ -5,7 +5,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <style>
-
 body{
     margin:0;
     font-family:Segoe UI, sans-serif;
@@ -13,7 +12,6 @@ body{
 }
 
 /* NAVBAR */
-
 .navbar{
     background:white;
     padding:15px 40px;
@@ -55,7 +53,6 @@ body{
 }
 
 /* MAIN GRID */
-
 .container{
     display:grid;
     grid-template-columns:repeat(auto-fit,minmax(320px,1fr));
@@ -64,7 +61,6 @@ body{
 }
 
 /* CARD */
-
 .card{
     background:white;
     padding:20px;
@@ -78,7 +74,6 @@ body{
 }
 
 /* USER ROW */
-
 .user-row{
     display:flex;
     justify-content:space-between;
@@ -97,7 +92,6 @@ body{
 }
 
 /* BUTTONS */
-
 .connect-btn{
     background:#0b93f6;
     color:white;
@@ -126,183 +120,167 @@ body{
 }
 
 /* MOBILE */
-
 @media (max-width:600px){
-
 .navbar{
     flex-direction:column;
     align-items:flex-start;
 }
-
 .nav-links{
     margin-top:10px;
 }
-
 }
 
+/* NOTES GRID */
+.notes-grid{
+    display:flex;
+    flex-wrap:wrap;
+    gap:20px;
+}
+.note-card{
+    background:white;
+    width:260px;
+    padding:20px;
+    border-radius:12px;
+    box-shadow:0 4px 12px rgba(0,0,0,0.1);
+}
+.note-card h4{
+    margin:0 0 8px 0;
+}
+.note-card p{
+    font-size:14px;
+    color:gray;
+    margin:5px 0 10px 0;
+}
+.btn{
+    display:inline-block;
+    padding:7px 12px;
+    border-radius:6px;
+    text-decoration:none;
+    font-size:14px;
+    margin-right:5px;
+}
+.view-btn{
+    background:#2196F3;
+    color:white;
+}
+.delete-btn{
+    background:#f44336;
+    color:white;
+    border:none;
+    cursor:pointer;
+}
 </style>
 </head>
 
 <body>
 
 <!-- NAVBAR -->
-
 <div class="navbar">
+    <div class="logo">SkillBridge</div>
 
-<div class="logo">SkillBridge</div>
+    <div class="nav-links">
+        <span>Welcome,</span>
+        <a href="{% url 'profile' request.user.id %}">{{ request.user.username }}</a>
+        <a href="{% url 'explore' %}" class="btn-primary">Explore</a>
 
-<div class="nav-links">
+        <!-- Connections Button -->
+        <a href="javascript:void(0);" class="btn-primary" onclick="toggleConnections()">Connections</a>
 
-<span>Welcome,</span>
-
-<a href="{% url 'profile' request.user.id %}">
-{{ request.user.username }}
-</a>
-
-<a href="{% url 'explore' %}" class="btn-primary">Explore</a>
-
-<a href="{% url 'edit_profile' %}" class="btn-primary">Edit Profile</a>
-
-<a href="/logout/" class="btn-danger">Logout</a>
-
-</div>
-
+        <a href="{% url 'edit_profile' %}" class="btn-primary">Edit Profile</a>
+        <a href="/logout/" class="btn-danger">Logout</a>
+    </div>
 </div>
 
 <!-- MAIN CONTENT -->
-
 <div class="container">
 
-<!-- DISCOVER USERS -->
+    <!-- DISCOVER USERS -->
+    <div class="card">
+        <h3>Discover Users</h3>
+        {% for user in users %}
+            {% if user != request.user %}
+            <div class="user-row">
+                <span><a href="{% url 'profile' user.id %}">{{ user.username }}</a></span>
+                <form method="POST" action="{% url 'send_request' user.id %}">
+                    {% csrf_token %}
+                    <button class="connect-btn">Connect</button>
+                </form>
+            </div>
+            {% endif %}
+        {% empty %}
+            <p>No users found.</p>
+        {% endfor %}
+    </div>
 
-<div class="card">
-
-<h3>Discover Users</h3>
-
-{% for user in users %}
-{% if user != request.user %}
-
-<div class="user-row">
-
-<span>
-<a href="{% url 'profile' user.id %}">
-{{ user.username }}
-</a>
-</span>
-
-<form method="POST" action="{% url 'send_request' user.id %}">
-{% csrf_token %}
-<button class="connect-btn">Connect</button>
-</form>
-
-</div>
-
-{% endif %}
-{% empty %}
-
-<p>No users found.</p>
-
-{% endfor %}
-
-</div>
-
-
-<!-- Pending Requests Section -->
-
-<div class="card">
-    <h3>Pending Requests</h3>
-
-    {% for request in pending_requests %}
+    <!-- Pending Requests -->
+    <div class="card">
+        <h3>Pending Requests</h3>
+        {% for request in pending_requests %}
         <div class="user-row">
-
-            <strong>
-                <a href="{% url 'profile' request.sender.id %}">
-                    {{ request.sender.username }}
-                </a>
-            </strong>
-
+            <strong><a href="{% url 'profile' request.sender.id %}">{{ request.sender.username }}</a></strong>
             <div>
-
-                <!-- ACCEPT BUTTON -->
                 <form method="POST" action="{% url 'accept_request' request.id %}" style="display:inline;">
                     {% csrf_token %}
                     <button class="accept-btn">Accept</button>
                 </form>
-
-                <!-- REJECT BUTTON -->
                 <form method="POST" action="{% url 'reject_request' request.id %}" style="display:inline;">
                     {% csrf_token %}
                     <button class="reject-btn">Reject</button>
                 </form>
-
             </div>
-
         </div>
-
-    {% empty %}
+        {% empty %}
         <p>No pending requests.</p>
-    {% endfor %}
-</div>
-
-<div style="display:flex; gap:40px; align-items:flex-start;">
-
-    <!-- LEFT SIDE -->
-    <div style="flex:1;">
-        
-        <!-- Discover Users -->
-        <!-- Keep your existing Discover Users code here -->
-
-        <!-- Pending Requests -->
-        <!-- Keep your existing Pending Requests code here -->
-
+        {% endfor %}
     </div>
 
-
-    <!-- RIGHT SIDE -->
-    <div style="flex:1.5;">
-
-        <h2 style="margin-bottom:20px;">📚 All Notes</h2>
-
-        {% if notes %}
-            <div style="display:flex; flex-wrap:wrap; gap:20px;">
-                {% for note in notes %}
-                    <div style="
-                        background:white;
-                        width:260px;
-                        padding:20px;
-                        border-radius:12px;
-                        box-shadow:0 4px 12px rgba(0,0,0,0.1);
-                    ">
-                        <h3>{{ note.title }}</h3>
-
-                        <p style="font-size:14px; color:gray;">
-                            📘 {{ note.course.name }}
-                        </p>
-
-                        <p style="font-size:14px; color:gray;">
-                            👤 {{ note.uploaded_by.username }}
-                        </p>
-
-                        <a href="{{ note.pdf.url }}" target="_blank"
-                           style="
-                           display:block;
-                           margin-top:10px;
-                           padding:8px;
-                           background:#4CAF50;
-                           color:white;
-                           text-align:center;
-                           text-decoration:none;
-                           border-radius:6px;">
-                           View PDF
-                        </a>
-                    </div>
-                {% endfor %}
-            </div>
+    <!-- Connections Section (Hidden by default) -->
+    <div class="card" id="connections" style="display:none;">
+        <h3>Your Connections</h3>
+        {% if connections %}
+            {% for connection in connections %}
+                <div class="user-row">
+                    {% if connection.sender == request.user %}
+                        <span><a href="{% url 'profile' connection.receiver.id %}">{{ connection.receiver.username }}</a></span>
+                        <a href="{% url 'chat' connection.receiver.id %}" class="connect-btn">Message</a>
+                    {% else %}
+                        <span><a href="{% url 'profile' connection.sender.id %}">{{ connection.sender.username }}</a></span>
+                        <a href="{% url 'chat' connection.sender.id %}" class="connect-btn">Message</a>
+                    {% endif %}
+                </div>
+            {% endfor %}
         {% else %}
-            <p>No notes uploaded yet.</p>
+            <p>No connections yet. Connect with users to start chatting!</p>
         {% endif %}
-
     </div>
-    
+
+    <!-- Notes Section -->
+    <div class="card">
+        <h3>Courses & Notes</h3>
+        {% for course in courses %}
+        <div class="user-row">
+            <span>{{ course.name }}</span>
+            <a href="{% url 'course_notes' course.id %}" class="connect-btn">Open</a>
+        </div>
+        {% empty %}
+        <p>No courses available.</p>
+        {% endfor %}
+    </div>
 
 </div>
+
+<script>
+// Toggle Connections Section
+function toggleConnections() {
+    var x = document.getElementById("connections");
+    if (x.style.display === "none") {
+        x.style.display = "block";
+        x.scrollIntoView({behavior: "smooth"});
+    } else {
+        x.style.display = "none";
+    }
+}
+</script>
+
+</body>
+</html>

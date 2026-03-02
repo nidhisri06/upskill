@@ -2,6 +2,8 @@ from django.db import models
 from django.contrib.auth.models import User
 from django.db.models.signals import post_save
 from django.dispatch import receiver
+from django.utils import timezone
+
 
 class Profile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
@@ -63,11 +65,14 @@ class Course(models.Model):
         return self.name
 
 
+# models.py
 class Note(models.Model):
     course = models.ForeignKey(Course, on_delete=models.CASCADE)
-    title = models.CharField(max_length=200)
-    pdf = models.FileField(upload_to="notes/")
+    title = models.CharField(max_length=255)
+    pdf = models.FileField(upload_to='notes/')
     uploaded_by = models.ForeignKey(User, on_delete=models.CASCADE)
+    uploaded_at = models.DateTimeField(default=timezone.now)
 
     def __str__(self):
         return self.title
+

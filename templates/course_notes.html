@@ -12,7 +12,7 @@
         }
 
         h2 {
-            margin-bottom: 10px;
+            margin-bottom: 20px;
         }
 
         .container {
@@ -20,30 +20,35 @@
             margin: auto;
         }
 
-        .upload-box {
-            background: white;
-            padding: 20px;
-            border-radius: 12px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-            margin-bottom: 30px;
+        .notes-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
         }
 
-        .upload-box input {
-            padding: 8px;
-            margin-right: 10px;
-        }
-
-        .upload-box button {
+        .btn {
+            display: inline-block;
             padding: 8px 15px;
-            background: #4CAF50;
-            border: none;
-            color: white;
             border-radius: 6px;
+            text-decoration: none;
+            font-size: 14px;
+            margin-right: 5px;
+            color: white;
             cursor: pointer;
         }
 
-        .upload-box button:hover {
-            background: #45a049;
+        .view-btn {
+            background: #2196F3;
+        }
+
+        .delete-btn {
+            background: #f44336;
+            border: none;
+        }
+
+        .upload-btn {
+            background: #4CAF50;
         }
 
         .notes-grid {
@@ -70,27 +75,6 @@
             margin: 5px 0 10px 0;
         }
 
-        .btn {
-            display: inline-block;
-            padding: 7px 12px;
-            border-radius: 6px;
-            text-decoration: none;
-            font-size: 14px;
-            margin-right: 5px;
-        }
-
-        .view-btn {
-            background: #2196F3;
-            color: white;
-        }
-
-        .delete-btn {
-            background: #f44336;
-            color: white;
-            border: none;
-            cursor: pointer;
-        }
-
         .back-link {
             display: inline-block;
             margin-top: 30px;
@@ -102,7 +86,6 @@
         .back-link:hover {
             text-decoration: underline;
         }
-
     </style>
 </head>
 
@@ -110,48 +93,38 @@
 
 <div class="container">
 
-    <h2>{{ course.name }} - Notes</h2>
+    <div class="notes-header">
+        <h2>{{ course.name }} - Notes</h2>
 
-    <!-- Upload Section -->
-    <div class="upload-box">
-        <h3>Upload Your Note (PDF only)</h3>
-
-        <form method="POST" enctype="multipart/form-data">
-            {% csrf_token %}
-            <input type="text" name="title" placeholder="Note Title" required>
-            <input type="file" name="pdf" accept="application/pdf" required>
-            <button type="submit">Upload</button>
-        </form>
+        <!-- Upload New Note Button -->
+        <a href="{% url 'upload_note' course.id %}" class="btn upload-btn">
+            ➕ Upload New Note
+        </a>
     </div>
 
     <!-- Notes Section -->
-    <h3>All Notes</h3>
-
     {% if notes %}
         <div class="notes-grid">
-
             {% for note in notes %}
                 <div class="note-card">
                     <h4>{{ note.title }}</h4>
-
                     <p>📘 {{ note.course.name }}</p>
                     <p>👤 Uploaded by: {{ note.uploaded_by.username }}</p>
-
+                    
+                    <!-- View PDF Button -->
                     <a href="{{ note.pdf.url }}" target="_blank" class="btn view-btn">
                         View PDF
                     </a>
 
+                    <!-- Delete Button (only for uploader) -->
                     {% if note.uploaded_by == request.user %}
                         <form method="POST" action="{% url 'delete_note' note.id %}" style="display:inline;">
                             {% csrf_token %}
-                            <button type="submit" class="btn delete-btn">
-                                Delete
-                            </button>
+                            <button type="submit" class="btn delete-btn">Delete</button>
                         </form>
                     {% endif %}
                 </div>
             {% endfor %}
-
         </div>
     {% else %}
         <p>No notes uploaded yet.</p>

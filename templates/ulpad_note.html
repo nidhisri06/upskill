@@ -1,0 +1,14 @@
+<h2>Upload Note for {{ course.name }}</h2>
+
+<form method="POST" enctype="multipart/form-data">
+    {% csrf_token %}
+    <label>Title:</label>
+    <input type="text" name="title" required><br><br>
+
+    <label>PDF File:</label>
+    <input type="file" name="pdf" accept="application/pdf" required><br><br>
+
+    <button type="submit" class="btn-primary">Upload</button>
+</form>
+
+<a href="{% url 'course_notes' course.id %}">Back to Notes</a>
