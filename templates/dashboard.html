@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Dashboard | SkillBridge</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+
+body{
+    margin:0;
+    font-family:Segoe UI, sans-serif;
+    background:#f4f6f9;
+}
+
+/* NAVBAR */
+
+.navbar{
+    background:white;
+    padding:15px 40px;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    flex-wrap:wrap;
+    box-shadow:0 2px 10px rgba(0,0,0,0.05);
+}
+
+.logo{
+    font-size:22px;
+    font-weight:600;
+    color:#0b93f6;
+}
+
+.nav-links{
+    display:flex;
+    align-items:center;
+    flex-wrap:wrap;
+    gap:10px;
+}
+
+.nav-links a{
+    text-decoration:none;
+    padding:8px 16px;
+    border-radius:20px;
+    font-size:14px;
+}
+
+.btn-primary{
+    background:#0b93f6;
+    color:white;
+}
+
+.btn-danger{
+    background:#ff4d4d;
+    color:white;
+}
+
+/* MAIN GRID */
+
+.container{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(320px,1fr));
+    gap:25px;
+    padding:40px;
+}
+
+/* CARD */
+
+.card{
+    background:white;
+    padding:20px;
+    border-radius:15px;
+    box-shadow:0 2px 10px rgba(0,0,0,0.05);
+}
+
+.card h3{
+    margin-top:0;
+    margin-bottom:15px;
+}
+
+/* USER ROW */
+
+.user-row{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    padding:10px 0;
+    border-bottom:1px solid #eee;
+}
+
+.user-row:last-child{
+    border-bottom:none;
+}
+
+.user-row a{
+    text-decoration:none;
+    color:#333;
+}
+
+/* BUTTONS */
+
+.connect-btn{
+    background:#0b93f6;
+    color:white;
+    border:none;
+    padding:6px 14px;
+    border-radius:15px;
+    cursor:pointer;
+}
+
+.accept-btn{
+    background:#28a745;
+    color:white;
+    border:none;
+    padding:6px 12px;
+    border-radius:10px;
+    cursor:pointer;
+}
+
+.reject-btn{
+    background:#dc3545;
+    color:white;
+    border:none;
+    padding:6px 12px;
+    border-radius:10px;
+    cursor:pointer;
+}
+
+/* MOBILE */
+
+@media (max-width:600px){
+
+.navbar{
+    flex-direction:column;
+    align-items:flex-start;
+}
+
+.nav-links{
+    margin-top:10px;
+}
+
+}
+
+</style>
+</head>
+
+<body>
+
+<!-- NAVBAR -->
+
+<div class="navbar">
+
+<div class="logo">SkillBridge</div>
+
+<div class="nav-links">
+
+<span>Welcome,</span>
+
+<a href="{% url 'profile' request.user.id %}">
+{{ request.user.username }}
+</a>
+
+<a href="{% url 'explore' %}" class="btn-primary">Explore</a>
+
+<a href="{% url 'edit_profile' %}" class="btn-primary">Edit Profile</a>
+
+<a href="/logout/" class="btn-danger">Logout</a>
+
+</div>
+
+</div>
+
+<!-- MAIN CONTENT -->
+
+<div class="container">
+
+<!-- DISCOVER USERS -->
+
+<div class="card">
+
+<h3>Discover Users</h3>
+
+{% for user in users %}
+{% if user != request.user %}
+
+<div class="user-row">
+
+<span>
+<a href="{% url 'profile' user.id %}">
+{{ user.username }}
+</a>
+</span>
+
+<form method="POST" action="{% url 'send_request' user.id %}">
+{% csrf_token %}
+<button class="connect-btn">Connect</button>
+</form>
+
+</div>
+
+{% endif %}
+{% empty %}
+
+<p>No users found.</p>
+
+{% endfor %}
+
+</div>
+
+
+<!-- PENDING REQUESTS -->
+
+<div class="card">
+
+<h3>Pending Requests</h3>
+
+{% for request in pending_requests %}
+
+<div class="user-row">
+
+<strong>
+<a href="{% url 'profile' request.sender.id %}">
+{{ request.sender.username }}
+</a>
+</strong>
+
+<div>
+
+<form method="POST" action="{% url 'respond_request' request.id 'accept' %}" style="display:inline;">
+{% csrf_token %}
+<button class="accept-btn">Accept</button>
+</form>
+
+<form method="POST" action="{% url 'respond_request' request.id 'reject' %}" style="display:inline;">
+{% csrf_token %}
+<button class="reject-btn">Reject</button>
+</form>
+
+</div>
+
+</div>
+
+{% empty %}
+
+<p>No pending requests.</p>
+
+{% endfor %}
+
+</div>
+
+
+<!-- CONNECTIONS -->
+
+<div class="card">
+
+<h3>Your Connections</h3>
+
+{% for connection in connections %}
+
+<div class="user-row">
+
+{% if connection.sender == request.user %}
+
+<span>
+<a href="{% url 'profile' connection.receiver.id %}">
+{{ connection.receiver.username }}
+</a>
+</span>
+
+<a href="{% url 'chat' connection.receiver.id %}" class="connect-btn">
+Message
+</a>
+
+{% else %}
+
+<span>
+<a href="{% url 'profile' connection.sender.id %}">
+{{ connection.sender.username }}
+</a>
+</span>
+
+<a href="{% url 'chat' connection.sender.id %}" class="connect-btn">
+Message
+</a>
+
+{% endif %}
+
+</div>
+
+{% empty %}
+
+<p>No connections yet.</p>
+
+{% endfor %}
+
+</div>
+
+</div>
+
+</body>
+</html>

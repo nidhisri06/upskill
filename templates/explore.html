@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Explore - SkillBridge</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <style>
+        body {
+            margin: 0;
+            font-family: 'Segoe UI', sans-serif;
+            background: #f4f6f9;
+        }
+
+        /* NAVBAR */
+        .navbar {
+            background: white;
+            padding: 15px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+        }
+
+        .navbar h2 {
+            margin: 0;
+        }
+
+        .navbar a {
+            text-decoration: none;
+            color: #333;
+            margin-left: 20px;
+            font-weight: 500;
+        }
+
+        .container {
+            padding: 40px;
+        }
+
+        h1 {
+            margin-bottom: 30px;
+        }
+
+        /* USER GRID */
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 25px;
+        }
+
+        /* CARD */
+        .card {
+            background: white;
+            padding: 25px;
+            border-radius: 16px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            transition: 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.08);
+        }
+
+        .username {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+
+        .bio, .skills {
+            font-size: 14px;
+            color: #555;
+            margin-bottom: 8px;
+        }
+
+        .btn {
+            display: inline-block;
+            margin-top: 10px;
+            padding: 8px 14px;
+            border-radius: 20px;
+            text-decoration: none;
+            font-size: 13px;
+            transition: 0.3s;
+        }
+
+        .btn-profile {
+            background: #e9ecef;
+            color: #333;
+        }
+
+        .btn-connect {
+            background: #0b93f6;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+
+        .btn-connect:hover {
+            background: #087ad6;
+        }
+
+    </style>
+</head>
+
+<body>
+
+<!-- NAVBAR -->
+<div class="navbar">
+    <h2>SkillBridge</h2>
+    <div>
+        <a href="{% url 'dashboard' %}">Dashboard</a>
+        <a href="{% url 'logout' %}" style="background:#ff4d4d; color:white; padding:6px 14px; border-radius:20px;">
+            Logout
+        </a>
+    </div>
+</div>
+
+<div class="container">
+    <h1>Discover Users</h1>
+    <form method="GET" style="margin-bottom:30px;">
+    <input 
+        type="text" 
+        name="skill" 
+        placeholder="Search by skill (e.g. Python, Design, AI)"
+        value="{{ search_query|default:'' }}"
+        style="padding:10px; width:250px; border-radius:20px; border:1px solid #ccc;"
+    >
+    
+</form>
+
+    <div class="grid">
+        {% for profile in profiles %}
+        <div class="card">
+
+            <div class="username">
+                {{ profile.user.username }}
+            </div>
+
+            <div class="bio">
+                <strong>Bio:</strong>
+                {{ profile.bio|default:"No bio available" }}
+            </div>
+
+            <div class="skills">
+                <strong>Skills:</strong>
+                {{ profile.skills|default:"No skills listed" }}
+            </div>
+
+            <a href="{% url 'profile' profile.user.id %}" class="btn btn-profile">
+                View Profile
+            </a>
+
+            {% if profile.user == request.user %}
+    <span style="
+        display:inline-block;
+        margin-top:10px;
+        padding:8px 14px;
+        background:#28a745;
+        color:white;
+        border-radius:20px;
+        font-size:13px;
+    ">
+        You
+    </span>
+
+{% elif profile.user.id in connected_user_ids %}
+    <span style="
+        display:inline-block;
+        margin-top:10px;
+        padding:8px 14px;
+        background:#6c757d;
+        color:white;
+        border-radius:20px;
+        font-size:13px;
+    ">
+        Connected
+    </span>
+
+{% else %}
+    <form method="POST" action="{% url 'send_request' profile.user.id %}" style="display:inline;">
+        {% csrf_token %}
+        <button class="btn btn-connect">
+            Connect
+        </button>
+    </form>
+{% endif %}
+
+        </div>
+        {% empty %}
+            <p>No users available.</p>
+        {% endfor %}
+    </div>
+</div>
+
+</body>
+</html>

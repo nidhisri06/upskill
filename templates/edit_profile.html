@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Edit Profile | SkillBridge</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <style>
+        body{
+            margin:0;
+            font-family:Segoe UI, sans-serif;
+            background:#f4f6f9;
+        }
+
+        /* NAVBAR */
+        .navbar{
+            background:white;
+            padding:15px 40px;
+            display:flex;
+            justify-content:space-between;
+            align-items:center;
+            box-shadow:0 2px 10px rgba(0,0,0,0.05);
+        }
+
+        .logo{
+            font-size:22px;
+            font-weight:600;
+            color:#0b93f6;
+        }
+
+        .nav-links a{
+            text-decoration:none;
+            margin-left:15px;
+            padding:8px 16px;
+            border-radius:20px;
+            font-size:14px;
+        }
+
+        .btn-primary{
+            background:#0b93f6;
+            color:white;
+        }
+
+        .btn-secondary{
+            background:#6c757d;
+            color:white;
+        }
+
+        /* MAIN CARD */
+        .container{
+            display:flex;
+            justify-content:center;
+            align-items:center;
+            padding:50px 20px;
+        }
+
+        .card{
+            background:white;
+            width:100%;
+            max-width:500px;
+            padding:30px;
+            border-radius:15px;
+            box-shadow:0 4px 15px rgba(0,0,0,0.05);
+        }
+
+        .card h2{
+            margin-top:0;
+            margin-bottom:20px;
+            text-align:center;
+        }
+
+        label{
+            font-weight:500;
+            display:block;
+            margin-bottom:5px;
+        }
+
+        textarea, input{
+            width:100%;
+            padding:10px;
+            border-radius:10px;
+            border:1px solid #ddd;
+            margin-bottom:20px;
+            font-size:14px;
+            outline:none;
+            transition:0.3s;
+        }
+
+        textarea:focus, input:focus{
+            border-color:#0b93f6;
+            box-shadow:0 0 5px rgba(11,147,246,0.3);
+        }
+
+        .button-group{
+            display:flex;
+            justify-content:space-between;
+        }
+
+        .save-btn{
+            background:#0b93f6;
+            color:white;
+            border:none;
+            padding:10px 20px;
+            border-radius:25px;
+            cursor:pointer;
+            font-size:14px;
+        }
+
+        .cancel-btn{
+            text-decoration:none;
+            background:#6c757d;
+            color:white;
+            padding:10px 20px;
+            border-radius:25px;
+            font-size:14px;
+            text-align:center;
+        }
+
+        .save-btn:hover{
+            background:#097ad1;
+        }
+
+        .cancel-btn:hover{
+            background:#5a6268;
+        }
+    </style>
+</head>
+
+<body>
+
+<!-- NAVBAR -->
+<div class="navbar">
+    <div class="logo">SkillBridge</div>
+
+    <div class="nav-links">
+        <a href="{% url 'dashboard' %}" class="btn-secondary">Dashboard</a>
+        <a href="/logout/" class="btn-primary">Logout</a>
+    </div>
+</div>
+
+<!-- EDIT PROFILE CARD -->
+<div class="container">
+    <div class="card">
+        <h2>Edit Profile</h2>
+
+        <form method="POST">
+            {% csrf_token %}
+
+            <label>Bio</label>
+            <textarea name="bio" rows="4" placeholder="Tell something about yourself...">{{ profile.bio }}</textarea>
+
+            <label>Skills (comma separated)</label>
+            <input type="text" name="skills" placeholder="Python, Django, UI Design..." value="{{ profile.skills }}">
+
+            <div class="button-group">
+                <a href="{% url 'dashboard' %}" class="cancel-btn">Cancel</a>
+                <button type="submit" class="save-btn">Save Changes</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+</body>
+</html>

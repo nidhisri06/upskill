@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Profile</title>
+</head>
+<body style="font-family:Segoe UI; background:#f4f6f9;">
+
+<div style="max-width:600px; margin:40px auto; background:white; padding:30px; border-radius:12px; box-shadow:0 2px 10px rgba(0,0,0,0.1);">
+
+    {% if profile.profile_picture %}
+        <img src="{{ profile.profile_picture.url }}" width="120" style="border-radius:50%;">
+    {% endif %}
+
+    <h2>{{ profile_user.username }}</h2>
+
+    <p><strong>Bio:</strong><br> {{ profile.bio|default:"No bio yet." }}</p>
+
+    <p><strong>Skills:</strong><br> {{ profile.skills|default:"No skills added." }}</p>
+
+    {% if request.user == profile_user %}
+        <a href="{% url 'edit_profile' %}" style="
+            text-decoration:none;
+            background:#0b93f6;
+            color:white;
+            padding:8px 15px;
+            border-radius:20px;
+        ">Edit Profile</a>
+    {% endif %}
+
+</div>
+
+</body>
+</html>

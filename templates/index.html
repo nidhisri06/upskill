@@ -1,0 +1,28 @@
+{% load static %}
+<!DOCTYPE html>
+<html>
+<head>
+    <title>SkillBridge</title>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+</head>
+<body>
+
+<nav class="navbar">
+    <div class="logo">SkillBridge</div>
+    <ul class="nav-links">
+        
+        <a href="{% url 'signup' %}" class="btn btn-primary">Join Now</a>
+        
+    </ul>
+</nav>
+
+<section class="hero">
+    <div class="hero-content">
+        <h1>Exchange Skills. Grow Together.</h1>
+        <p>Connect with passionate learners and share knowledge without money.</p>
+       <a href="{% url 'login' %}" class="btn btn-primary">Get Started</a>
+    </div>
+</section>
+
+</body>
+</html>
